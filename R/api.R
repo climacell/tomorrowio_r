@@ -127,7 +127,6 @@ tomorrowio_historical <- function(api_key, location, fields, timesteps, start_ti
 #'   start_time = Sys.time() - (60 * 60 * 24 * 3), end_time = Sys.time() + (60 * 60 * 24 * 5)
 #' )
 #' @export
-
 tomorrowio_timeline <- function(api_key, location, fields, timesteps, start_time, end_time, units = "metric",
                                 timezone = "UTC", batch_size_days = 0) {
   return(batch_api_helper(
@@ -137,6 +136,7 @@ tomorrowio_timeline <- function(api_key, location, fields, timesteps, start_time
   ))
 }
 
+## Helper to split a date range into several batches.
 batch_api_helper <- function(endpoint, api_key, location, fields, timesteps, start_time, end_time, units = "metric",
                              timezone = "UTC", batch_size_days = 0) {
   if (start_time > end_time) {
@@ -166,6 +166,7 @@ batch_api_helper <- function(endpoint, api_key, location, fields, timesteps, sta
   return(gdf)
 }
 
+## API helper to make the actuall raw call to the tomorrow.io weather API.
 api_helper <- function(endpoint, api_key, location, fields, units, timesteps, start_time, end_time, timezone) {
   if (start_time > end_time) {
     stop("start_time has to be before end_time")

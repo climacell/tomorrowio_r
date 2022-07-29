@@ -1,6 +1,8 @@
 # tomorrowio_r
 
-Tomorrow.io Weather Data API R package
+Tomorrow.io Weather Data API R package.
+
+To read more about the underlying API, and get a license key see the [Tomorrow.io documentation](https://docs.tomorrow.io/).
 
 # Installation
 
