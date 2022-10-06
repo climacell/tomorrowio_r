@@ -1,7 +1,7 @@
 Package: tomorrowior
 Type: Package
 Title: Tomorrow.io Weather Data API
-Version: 0.0.1.0
+Version: 0.0.2.0
 RoxygenNote: 7.2.1
 URL: https://github.com/climacell/tomorrowio_r
 License: MIT

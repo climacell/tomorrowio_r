@@ -1,6 +1,12 @@
 
+## One minute in seconds
+minutes <- 60
+
+## One hour in seconds
+hours <- 60 * minutes
+
 ## One day in seconds
-days <- 60 * 60 * 24
+days <- 24 * hours
 
 ## Oldest number of days that timeline API will support
 timeline_start_limit <- 7
@@ -186,22 +192,25 @@ api_helper <- function(endpoint, api_key, location, fields, units, timesteps, st
     sprintf('"units":"%s"', units),
     sprintf('"timesteps":["%s"]', paste(timesteps, collapse = "\",\"")),
     ## Use UTC to ensure that the API returns the right data.
-    sprintf('"startTime":"%s"', format(start_time, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")),
-    sprintf('"endTime":"%s"', format(end_time, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")),
+    sprintf('"startTime":"%s"', format(start_time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")),
+    sprintf('"endTime":"%s"', format(end_time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")),
     sprintf('"timezone":"%s"}', timezone),
     sep = ","
   )
+  ##cat(sprintf("endpoint: %s\n", endpoint))
+  ##cat(sprintf("payload: %s\n", payload))
   ## Call the API
   response <- httr::POST(url,
     body = payload, httr::add_headers("Accept-Encoding" = "gzip"), query = list(apikey = api_key),
     httr::content_type("application/json"), httr::accept("application/json"), encode = "json"
     )
-  ## Turn resonse content into a string
-  cont <- httr::content(response, "text")
   ## Check the status code
   if (response$status_code >= 300) {
-    stop(sprintf("Error code %i while querying %s data: %s", response$status_code, endpoint, cont))
+      stop(sprintf("Error code %i while querying %s data: %s", response$status_code, endpoint, cont))
   }
+  ## Turn resonse content into a string
+  cont <- httr::content(response, "text")
+  ##cat(sprintf("cont: %s\n", cont))
   ## Parse the json
   document <- jsonlite::fromJSON(cont, simplifyVector = TRUE)
   ## Get the timelines data frame, each row is one timestep
@@ -215,14 +224,16 @@ api_helper <- function(endpoint, api_key, location, fields, units, timesteps, st
     ## Replace string with a real date/time object
     df$startTime <- as.POSIXct(df$startTime, "%Y-%m-%dT%H:%M:%S", tz = timezone)
     ## Create some factors
-    df$timestep  <- factor(t$timestep)
-    df$endpoint  <- factor(endpoint)
-    ## Values is a sub data frame stored in one column. So we flatten it by adding it as new columns.
-    df <- cbind(df, df$values)
-    ## Then drop the values sub data frame
-    df <- df[, !(names(df) %in% c("values"))]
-    ## Append new df to global data frame
-    gdf <- if (is.null(gdf)) df else rbind(gdf, df)
+    if (length(df$startTime) > 0) {
+      df$timestep <- factor(t$timestep)
+      df$endpoint <- factor(endpoint)
+      ## Values is a sub data frame stored in one column. So we flatten it by adding it as new columns.
+      df <- cbind(df, df$values)
+      ## Then drop the values sub data frame
+      df <- df[, !(names(df) %in% c("values"))]
+      ## Append new df to global data frame
+      gdf <- if (is.null(gdf)) df else rbind(gdf, df)
+    }
   }
   return(gdf)
 }
